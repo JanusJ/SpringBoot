@@ -1,0 +1,4 @@
+-------------------------------------------------------------------------------
+Test set: com.cloud.provider.ProviderApplicationTests
+-------------------------------------------------------------------------------
+Tests run: 1, Failures: 0, Errors: 0, Skipped: 0, Time elapsed: 7.99 sec - in com.cloud.provider.ProviderApplicationTests
