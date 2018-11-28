@@ -6,12 +6,17 @@ import com.jane.service.UserServcie;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.*;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
 
+import javax.persistence.EntityManager;
+import javax.persistence.PersistenceContext;
+import javax.persistence.TypedQuery;
 import javax.persistence.criteria.*;
 import javax.persistence.metamodel.EntityType;
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -25,6 +30,9 @@ public class UserController {
 
     @Autowired
     UserServcie userServcie;
+
+    @PersistenceContext
+    private EntityManager entityManager;
 
     @GetMapping("/user/{id}")
     public User getUser(@PathVariable("id") Integer id){
@@ -144,9 +152,9 @@ public class UserController {
             @Override
             public Predicate toPredicate(Root<User> root,
                                          CriteriaQuery<?> query, CriteriaBuilder cb) {
-                Path path = root.get("id");
-                Predicate predicate = cb.gt(path,5);
-                return predicate;
+                Path id = root.get("id");
+                Predicate predicateId = cb.gt(id,5);
+                return predicateId;
             }
         };
         Page<User> userPage = userRepository.findAll(specification,  pageable);
@@ -158,5 +166,179 @@ public class UserController {
         User user = userRepository.getUserById(id);
         return user;
     }
+    @GetMapping("/test17")
+    public Page<User> test17(){
+        Sort sort = new Sort(Sort.Direction.DESC,"id");
+        int page = 1;
+        int pageSize = 5;
+        Pageable pageable = PageRequest.of(page,pageSize,sort);
 
+        //通常使用 Specification 的匿名内部类
+        /**
+         * @param *root: 代表查询的实体类.
+         * @param query: 可以从中可到 Root 对象, 即告知 JPA Criteria 查询要查询哪一个实体类. 还可以
+         * 来添加查询条件, 还可以结合 EntityManager 对象得到最终查询的 TypedQuery 对象.
+         *代表一个specific的顶层查询对象，它包含着查询的各个部分，比如：select 、from、where、group by、order by。
+         *
+         * @param *cb: CriteriaBuilder 对象.用于构造标准查询、复合条件、表达式、排序等 ;创建 Criteria 相关对象的工厂.
+         * 当然可以从中获取到 Predicate 对象;可以通过createQuery的方式获取CriteriaQuery实例
+         * @return: *Predicate 类型, 代表一个查询条件.代表Criteria查询的根对象，定义了实体类型，能为将来导航获得想要的结果，它与SQL查询中的FROM子句类似
+         */
+        Specification<User> specification = new Specification<User>() {
+            @Override
+            public Predicate toPredicate(Root<User> root,
+                                         CriteriaQuery<?> query, CriteriaBuilder cb) {
+                Path id = root.get("id");
+                List<Predicate> predicates=new ArrayList<Predicate>();
+                Predicate predicateId = cb.gt(id,5);
+                predicates.add(predicateId);
+                Path<User> email = root.get("email");
+                Predicate predicateEmail = cb.equal(email, "aa@qq.com");
+                predicates.add(predicateEmail);
+                Predicate endPredicate = cb.and(predicates.toArray(new Predicate[predicates.size()]));
+//                Predicate endPredicate = cb.and((Predicate[]) predicates.toArray());
+                return endPredicate;
+            }
+        };
+        System.out.println(specification.toString());
+        Page<User> userPage = userRepository.findAll(specification,  pageable);
+        System.out.println("***********************");
+        return userPage;
+    }
+    @GetMapping("/test18")
+    public Page<User> test18(){
+        Sort sort = new Sort(Sort.Direction.DESC,"id");
+        int page = 1;
+        int pageSize = 5;
+        Pageable pageable = PageRequest.of(page,pageSize,sort);
+
+        Specification<User> specification = new Specification<User>() {
+            @Override
+            public Predicate toPredicate(Root<User> root,
+                                         CriteriaQuery<?> query, CriteriaBuilder cb) {
+                return cb.disjunction();
+//                return cb.conjunction();
+            }
+        };
+        Page<User> userPage = userRepository.findAll(specification,  pageable);
+        return userPage;
+    }
+    @GetMapping("/test19")
+    public Page<User> test19(){
+        Sort sort = new Sort(Sort.Direction.DESC,"id");
+        int page = 1;
+        int pageSize = 5;
+        Pageable pageable = PageRequest.of(page,pageSize,sort);
+
+        Specification<User> specification = new Specification<User>() {
+            @Override
+            public Predicate toPredicate(Root<User> root,
+                                         CriteriaQuery<?> query, CriteriaBuilder cb) {
+                Path<Object> addressPath = root.get("address");
+                Path<Object> expression = addressPath.get("city");
+//                String[] names = StringUtils.split("address.city", ".");
+//                Path expression = root.get(names[0]);
+//                for (int i = 1; i < names.length; i++) {
+//                    expression = expression.get(names[i]);
+//                }
+                Predicate predicate = cb.equal(expression, "beijing");
+                return predicate;
+            }
+        };
+        Page<User> userPage = userRepository.findAll(specification,  pageable);
+        return userPage;
+    }
+
+    @GetMapping("/test20")
+    public Page<User> test20(){
+        Sort sort = new Sort(Sort.Direction.DESC,"id");
+        int page = 1;
+        int pageSize = 5;
+        Pageable pageable = PageRequest.of(page,pageSize,sort);
+
+        Specification<User> specification = new Specification<User>() {
+            @Override
+            public Predicate toPredicate(Root<User> root,
+                                         CriteriaQuery<?> query, CriteriaBuilder cb) {
+                Path<Object> addressPath = root.get("address");
+                Path<Object> expression = addressPath.get("city");
+                Predicate predicate = cb.equal(expression, "beijing");
+                return predicate;
+            }
+        };
+        Page<User> userPage = userRepository.findAll(specification,  pageable);
+        return userPage;
+    }
+    @GetMapping("/test21")
+    public Page<User> test21(){
+        Sort sort = new Sort(Sort.Direction.DESC,"id");
+        int page = 1;
+        int pageSize = 5;
+        Pageable pageable = PageRequest.of(page,pageSize,sort);
+
+        Specification<User> specification = new Specification<User>() {
+            @Override
+            public Predicate toPredicate(Root<User> root,
+                                         CriteriaQuery<?> query, CriteriaBuilder cb) {
+                Path id = root.get("id");
+                List<Predicate> predicates=new ArrayList<Predicate>();
+                Predicate predicateId = cb.gt(id,5);
+                predicates.add(predicateId);
+                Path<User> email = root.get("email");
+                Predicate predicateEmail = cb.equal(email, "aa@qq.com");
+                predicates.add(predicateEmail);
+                Predicate endPredicate = cb.and(predicates.toArray(new Predicate[predicates.size()]));
+//                Predicate endPredicate = cb.and((Predicate[]) predicates.toArray());
+                //添加where条件
+                query.where(endPredicate);
+                 //指定查询项，select后面的东西
+                query.multiselect(id,email,cb.count(id));
+                //分组
+                query.groupBy(id);
+                //排序
+                query.orderBy(cb.asc(id));
+                //筛选
+                query.having(cb.greaterThan(id,0));
+                //获取最终的Predicate
+                Predicate restriction = query.getRestriction();
+                return restriction;
+            }
+        };
+        Page<User> userPage = userRepository.findAll(specification,  pageable);
+        return userPage;
+    }
+
+    @GetMapping("/test22")
+    public List<User> test22(){
+        CriteriaBuilder cb = entityManager.getCriteriaBuilder();
+        //User指定了查询结果返回至自定义对象
+        CriteriaQuery<User> query = cb.createQuery(User.class);
+        Root<User> root = query.from(User.class);
+        Path id = root.get("id");
+        List<Predicate> predicates=new ArrayList<Predicate>();
+        Predicate predicateId = cb.equal(id,1);
+        predicates.add(predicateId);
+        Path<User> email = root.get("email");
+        Predicate predicateEmail = cb.equal(email, "aa@qq.com");
+        predicates.add(predicateEmail);
+        Predicate endPredicate = cb.and(predicates.toArray(new Predicate[predicates.size()]));
+//                Predicate endPredicate = cb.and((Predicate[]) predicates.toArray());
+        //添加where条件
+        query.where(endPredicate);
+         //指定查询项，select后面的东西
+//        query.multiselect(id,email);
+        //分组
+        query.groupBy(id);
+        //排序
+        query.orderBy(cb.asc(id));
+        //筛选
+        query.having(cb.greaterThan(id,0));
+        TypedQuery<User> q = entityManager.createQuery(query);
+        List<User> result = q.getResultList();
+        for (User user : result) {
+            //打印查询结果
+            System.out.println(user.toString());
+        }
+        return result;
+    }
 }
