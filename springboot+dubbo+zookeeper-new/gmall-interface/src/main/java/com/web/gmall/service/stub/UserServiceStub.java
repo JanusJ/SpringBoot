@@ -5,7 +5,7 @@ import java.util.List;
 import com.web.gmall.bean.UserAddress;
 import com.web.gmall.service.UserService;
 
-
+//本地存根
 public class UserServiceStub implements UserService {
 	
 	private final UserService userService;
@@ -19,8 +19,7 @@ public class UserServiceStub implements UserService {
 		super();
 		this.userService = userService;
 	}
-
-
+	//如果用户id为空，则直接返回null，不会再进行远程调用
 	@Override
 	public List<UserAddress> getUserAddressList(String userId) {
 		// TODO Auto-generated method stub
